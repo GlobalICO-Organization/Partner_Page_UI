@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced 5-Year Roadmap Calculator - CapSeriesX</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .calculator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            height: 3px;
+            background: #1e3c72;
+            z-index: 1;
+            transition: width 0.5s ease;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e0e0e0;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            border-color: #1e3c72;
+            background: #1e3c72;
+            color: white;
+        }
+
+        .step-item.completed .step-circle {
+            border-color: #28a745;
+            background: #28a745;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .step-item.active .step-label {
+            color: #1e3c72;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .tier-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .tier-card.selected {
+            border-color: #1e3c72;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tier-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .tier-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .tier-price {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .form-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 15px 15px 15px 35px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        select {
+            padding-left: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        .slider-container {
+            margin-top: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #1e3c72;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #1e3c72;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #1e3c72;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .scenario-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .scenario-tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-tab.active {
+            color: #1e3c72;
+            border-bottom-color: #1e3c72;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #163056;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #1e3c72;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .results-header h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .year-breakdown {
+            background: #f8f9fa;
+            border-left: 4px solid #1e3c72;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .year-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .year-title {
+            font-size: 1.5em;
+            color: #1e3c72;
+            font-weight: 700;
+        }
+
+        .year-summary {
+            font-size: 1.2em;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .year-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #1e3c72;
+            font-weight: 700;
+        }
+
+        .comparison-table {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background: #e9ecef;
+        }
+
+        .highlight {
+            background: #fff3cd !important;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .action-items {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .action-items h3 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+        }
+
+        .action-items ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .action-items li {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .action-items li:last-child {
+            border-bottom: none;
+        }
+
+        .action-icon {
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .tabs-container {
+            margin-bottom: 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 25px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .form-grid, .chart-grid, .tier-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 2em;
+            }
+
+            .progress-steps {
+                flex-wrap: wrap;
+            }
+
+            .step-item {
+                flex-basis: 50%;
+                margin-bottom: 20px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1e3c72;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .monthly-breakdown {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .monthly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .month-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .month-card.positive {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .month-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .month-value {
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+
+        .download-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .download-section h3 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+        }
+
+        .download-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .risk-meter {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .risk-indicator {
+            display: flex;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .risk-low {
+            background: #28a745;
+            flex: 1;
+        }
+
+        .risk-medium {
+            background: #ffc107;
+            flex: 1;
+        }
+
+        .risk-high {
+            background: #dc3545;
+            flex: 1;
+        }
+
+        .risk-pointer {
+            width: 4px;
+            height: 40px;
+            background: #000;
+            position: relative;
+            margin-top: -5px;
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header">
+            <h1>🎯 Your 5-Year Wealth Roadmap Calculator</h1>
+            <p>Build your personalized path to financial freedom with CapSeriesX</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="progress-line" id="progressLine" style="width: 0%"></div>
+                <div class="step-item active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Partnership Tier</div>
+                </div>
+                <div class="step-item" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Goals & Strategy</div>
+                </div>
+                <div class="step-item" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Customization</div>
+                </div>
+                <div class="step-item" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Your Roadmap</div>
+                </div>
+            </div>
+
+            <!-- Section 1: Tier Selection -->
+            <div class="section active" id="section1">
+                <h2 style="text-align: center; color: #1e3c72; margin-bottom: 30px;">Step 1: Select Your Partnership Tier</h2>
+                
+                <div class="tier-grid">
+                    <div class="tier-card" data-tier="bronze" onclick="selectTier('bronze')">
+                        <div class="tier-icon">🥉</div>
+                        <div class="tier-name">Bronze Partner</div>
+                        <div class="tier-price">$0 - FREE</div>
+                        <p style="margin-top: 15px; font-size: 0.9em;">Referral income model</p>
+                    </div>
+
+                    <div class="tier-card" data-tier="silver" onclick="selectTier('silver')">
+                        <div class="tier-icon">🥈</div>
+                        <div class="tier-name">Silver Partner</div>
+                        <div class="tier-price">$2,500</div>
+                        <p style="margin-top: 15px; font-size: 0.9em;">Property management focus</p>
+                    </div>
+
+                    <div class="tier-card" data-tier="gold" onclick="selectTier('gold')">
+                        <div class="tier-icon">🥇</div>
+                        <div class="tier-name">Gold Partner</div>
+                        <div class="tier-price">$10,000</div>
+                        <p style="margin-top: 15px; font-size: 0.9em;">Operating partner</p>
+                    </div>
+
+                    <div class="tier-card" data-tier="platinum" onclick="selectTier('platinum')">
+                        <div class="tier-icon">💎</div>
+                        <div class="tier-name">Platinum Partner</div>
+                        <div class="tier-price">$25,000</div>
+                        <p style="margin-top: 15px; font-size: 0.9em;">Co-General Partner</p>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="goToStep(2)" id="tierContinue" disabled>Continue to Goals →</button>
+                </div>
+            </div>
+
+            <!-- Section 2: Goals & Strategy -->
+            <div class="section" id="section2">
+                <button class="back-btn" onclick="goToStep(1)">← Back to Tier Selection</button>
+                
+                <h2 style="text-align: center; color: #1e3c72; margin-bottom: 30px;">Step 2: Define Your Goals & Strategy</h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">💰 Wealth Accumulation Goal</label>
+                        <p class="form-description">How much do you want to accumulate in 5 years?</p>
+                        <div class="input-wrapper">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="wealthGoal" placeholder="500000" min="0" step="10000">
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="wealthSlider" min="100000" max="5000000" step="50000" value="500000">
+                            <div class="slider-value" id="wealthSliderValue">$500,000</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📊 Year 5 Annual Income Goal</label>
+                        <p class="form-description">Target recurring annual income by end of Year 5</p>
+                        <div class="input-wrapper">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="incomeGoal" placeholder="150000" min="0" step="5000">
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="incomeSlider" min="25000" max="1000000" step="25000" value="150000">
+                            <div class="slider-value" id="incomeSliderValue">$150,000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">🏠 Property Type Strategy</label>
+                        <select id="propertyType">
+                            <option value="sfr">Single Family Rentals (SFR)</option>
+                            <option value="small-multi">Small Multifamily (2-4 units)</option>
+                            <option value="large-multi">Large Multifamily (5-20 units)</option>
+                            <option value="mixed">Mixed Portfolio</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">⏱️ Hold Period Strategy</label>
+                        <select id="holdPeriod">
+                            <option value="3">3 Years - Quick flip strategy</option>
+                            <option value="5" selected>5 Years - Standard hold</option>
+                            <option value="7">7 Years - Extended hold</option>
+                            <option value="10">10 Years - Long-term wealth building</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(3)">Continue to Customization →</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Advanced Customization -->
+            <div class="section" id="section3">
+                <button class="back-btn" onclick="goToStep(2)">← Back to Goals</button>
+                
+                <h2 style="text-align: center; color: #1e3c72; margin-bottom: 30px;">Step 3: Customize Your Assumptions</h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">🏡 Average Property Value</label>
+                        <div class="slider-container">
+                            <input type="range" id="propertyValueSlider" min="200000" max="2000000" step="50000" value="400000">
+                            <div class="slider-value" id="propertyValueDisplay">$400,000</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">💵 Average Monthly Rent</label>
+                        <div class="slider-container">
+                            <input type="range" id="rentSlider" min="1000" max="10000" step="250" value="3000">
+                            <div class="slider-value" id="rentDisplay">$3,000/month</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">📈 Expected Appreciation Rate</label>
+                        <select id="appreciationRate">
+                            <option value="0.03">3% - Conservative (Slow markets)</option>
+                            <option value="0.05" selected>5% - Moderate (National average)</option>
+                            <option value="0.07">7% - Strong (Growth markets)</option>
+                            <option value="0.10">10% - Aggressive (Hot markets)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🏦 Financing Strategy</label>
+                        <select id="financingStrategy">
+                            <option value="cash">All Cash - No leverage</option>
+                            <option value="70ltv" selected>70% LTV - Standard financing</option>
+                            <option value="80ltv">80% LTV - Aggressive leverage</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">⚙️ Optional Features</label>
+                    
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="includePM" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <span>Include Property Management Income (if tier allows)</span>
+                    </div>
+
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="includeMonthly">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Show Monthly Breakdown</span>
+                    </div>
+
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="includeTax">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Include Tax Implications</span>
+                    </div>
+
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="showRisk">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Show Risk Analysis</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-success" onclick="calculateRoadmap()">🚀 Generate My Roadmap</button>
+                </div>
+            </div>
+
+            <!-- Section 4: Results -->
+            <div class="section" id="section4">
+                <button class="back-btn" onclick="goToStep(3)">← Back to Customization</button>
+                
+                <div id="resultsContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Generating your personalized roadmap...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    // Global state
+    let calculatorState = {
+        currentStep: 1,
+        selectedTier: null,
+        wealthGoal: 500000,
+        incomeGoal: 150000,
+        propertyType: 'sfr',
+        holdPeriod: 5,
+        propertyValue: 400000,
+        monthlyRent: 3000,
+        appreciationRate: 0.05,
+        financingStrategy: '70ltv',
+        includePM: true,
+        includeMonthly: false,
+        includeTax: false,
+        showRisk: false,
+        results: null
+    };
+
+    // Tier structures
+    const tierStructures = {
+        bronze: {
+            name: "Bronze Partner",
+            upfrontCost: 0,
+            monthlyCost: 0,
+            revenuePerDeal: 2000,
+            description: "Referral-based income model"
+        },
+        silver: {
+            name: "Silver Partner",
+            upfrontCost: 2500,
+            monthlyCost: 0,
+            insurance: 1000,
+            pmFeePerUnit: 900,
+            amFeePercent: 0.015,
+            amFeeShare: 0.40,
+            description: "Property management recurring revenue"
+        },
+        gold: {
+            name: "Gold Partner",
+            upfrontCost: 10000,
+            monthlyCost: 299,
+            insurance: 2000,
+            acquisitionFee: 0.02,
+            amFeePercent: 0.015,
+            amFeeShare: 0.35,
+            pmOptional: true,
+            pmFeePercent: 0.09,
+            description: "Operating partner with deal presentation"
+        },
+        platinum: {
+            name: "Platinum Partner",
+            upfrontCost: 25000,
+            monthlyCost: 499,
+            insurance: 6500,
+            acquisitionFee: 0.02,
+            amFeePercent: 0.015,
+            amFeeShare: 0.45,
+            carriedInterest: 0.20,
+            coInvestPercent: 0.02,
+            pmOptional: true,
+            pmFeePercent: 0.09,
+            description: "Co-GP with maximum compensation"
+        }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        // Wealth goal sync
+        document.getElementById('wealthGoal').addEventListener('input', function(e) {
+            const value = e.target.value || 0;
+            document.getElementById('wealthSlider').value = value;
+            document.getElementById('wealthSliderValue').textContent = formatCurrency(value);
+            calculatorState.wealthGoal = parseInt(value) || 0;
+        });
+
+        document.getElementById('wealthSlider').addEventListener('input', function(e) {
+            const value = e.target.value || 0;
+            document.getElementById('wealthGoal').value = value;
+            document.getElementById('wealthSliderValue').textContent = formatCurrency(value);
+            calculatorState.wealthGoal = parseInt(value) || 0;
+        });
+
+        // Income goal sync
+        document.getElementById('incomeGoal').addEventListener('input', function(e) {
+            const value = e.target.value || 0;
+            document.getElementById('incomeSlider').value = value;
+            document.getElementById('incomeSliderValue').textContent = formatCurrency(value);
+            calculatorState.incomeGoal = parseInt(value) || 0;
+        });
+
+        document.getElementById('incomeSlider').addEventListener('input', function(e) {
+            const value = e.target.value || 0;
+            document.getElementById('incomeGoal').value = value;
+            document.getElementById('incomeSliderValue').textContent = formatCurrency(value);
+            calculatorState.incomeGoal = parseInt(value) || 0;
+        });
+
+        // Property value slider
+        document.getElementById('propertyValueSlider').addEventListener('input', function(e) {
+            const value = e.target.value || 0;
+            document.getElementById('propertyValueDisplay').textContent = formatCurrency(value);
+            calculatorState.propertyValue = parseInt(value) || 0;
+        });
+
+        // Rent slider
+        document.getElementById('rentSlider').addEventListener('input', function(e) {
+            const value = e.target.value || 0;
+            document.getElementById('rentDisplay').textContent = formatCurrency(value) + '/month';
+            calculatorState.monthlyRent = parseInt(value) || 0;
+        });
+
+        // Dropdowns
+        document.getElementById('propertyType').addEventListener('change', function(e) {
+            calculatorState.propertyType = e.target.value;
+        });
+
+        document.getElementById('holdPeriod').addEventListener('change', function(e) {
+            calculatorState.holdPeriod = parseInt(e.target.value) || 5;
+        });
+
+        document.getElementById('appreciationRate').addEventListener('change', function(e) {
+            calculatorState.appreciationRate = parseFloat(e.target.value) || 0.05;
+        });
+
+        document.getElementById('financingStrategy').addEventListener('change', function(e) {
+            calculatorState.financingStrategy = e.target.value;
+        });
+
+        // Toggles
+        document.getElementById('includePM').addEventListener('change', function(e) {
+            calculatorState.includePM = e.target.checked;
+        });
+
+        document.getElementById('includeMonthly').addEventListener('change', function(e) {
+            calculatorState.includeMonthly = e.target.checked;
+        });
+
+        document.getElementById('includeTax').addEventListener('change', function(e) {
+            calculatorState.includeTax = e.target.checked;
+        });
+
+        document.getElementById('showRisk').addEventListener('change', function(e) {
+            calculatorState.showRisk = e.target.checked;
+        });
+    }
+
+    function selectTier(tier) {
+        calculatorState.selectedTier = tier;
+        
+        // Update UI
+        document.querySelectorAll('.tier-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        const selected = document.querySelector(`[data-tier="${tier}"]`);
+        if (selected) {
+            selected.classList.add('selected');
+        }
+        
+        // Enable continue button
+        document.getElementById('tierContinue').disabled = false;
+    }
+
+    function goToStep(step) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show target section
+        const target = document.getElementById(`section${step}`);
+        if (target) {
+            target.classList.add('active');
+        }
+
+        // Update progress
+        updateProgress(step);
+        calculatorState.currentStep = step;
+    }
+
+    function updateProgress(step) {
+        const progress = ((step - 1) / 3) * 100;
+        const progressLine = document.getElementById('progressLine');
+        if (progressLine) {
+            progressLine.style.width = progress + '%';
+        }
+
+        // Update step items
+        document.querySelectorAll('.step-item').forEach((item, index) => {
+            item.classList.remove('active', 'completed');
+            if (index + 1 < step) {
+                item.classList.add('completed');
+            } else if (index + 1 === step) {
+                item.classList.add('active');
+            }
+        });
+    }
+
+    function calculateRoadmap() {
+        goToStep(4);
+        
+        const container = document.getElementById('resultsContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating your personalized roadmap...</p>
+                </div>
+            `;
+        }
+
+        // Simulate processing delay
+        setTimeout(() => {
+            const results = generateComprehensiveRoadmap();
+            calculatorState.results = results;
+            displayResults(results);
+        }, 1500);
+    }
+
+    function generateComprehensiveRoadmap() {
+        const tier = calculatorState.selectedTier;
+        const structure = tier ? tierStructures[tier] : tierStructures['bronze'];
+        
+        let roadmap = {
+            tier: structure.name,
+            years: [],
+            summary: {},
+            charts: {},
+            monthly: [],
+            risk: {},
+            tax: {}
+        };
+
+        // Simple demo logic – you can plug real formulas here
+        const totalDeals = 10;
+        const baseRevenuePerYear = calculatorState.wealthGoal / 5;
+
+        for (let year = 1; year <= 5; year++) {
+            roadmap.years.push({
+                year: year,
+                deals: Math.ceil(totalDeals / 5),
+                revenue: Math.round(baseRevenuePerYear * year)
+            });
+        }
+
+        roadmap.summary = {
+            totalDeals: totalDeals,
+            totalRevenue: calculatorState.wealthGoal,
+            year5Income: calculatorState.incomeGoal
+        };
+
+        return roadmap;
+    }
+
+    function displayResults(results) {
+        const container = document.getElementById('resultsContainer');
+        if (!container) return;
+        
+        let html = `
+            <div class="results-header">
+                <h2>Your Personalized ${results.tier} Roadmap</h2>
+                <p>Path to ${formatCurrency(calculatorState.wealthGoal)} in wealth and ${formatCurrency(calculatorState.incomeGoal)} annual income</p>
+                
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">${results.summary.totalDeals}</div>
+                        <div class="stat-label">Total Deals Needed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${formatCurrency(results.summary.totalRevenue)}</div>
+                        <div class="stat-label">5-Year Earnings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${formatCurrency(results.summary.year5Income)}</div>
+                        <div class="stat-label">Year 5 Income</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <h3>📥 Download Your Roadmap</h3>
+                <div class="download-options">
+                    <button class="btn btn-primary" onclick="downloadPDF()">Download PDF Report</button>
+                    <button class="btn btn-secondary" onclick="downloadExcel()">Download Excel Template</button>
+                    <button class="btn btn-secondary" onclick="emailRoadmap()">Email to Me</button>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h3>📈 Income Growth Over Time</h3>
+                    <canvas id="incomeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>🥧 Revenue Breakdown</h3>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="tabs-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="switchTab('annual')">Annual View</button>
+                    <button class="tab-button" onclick="switchTab('monthly')">Monthly View</button>
+                    <button class="tab-button" onclick="switchTab('comparison')">Tier Comparison</button>
+                    <button class="tab-button" onclick="switchTab('risk')">Risk Analysis</button>
+                </div>
+
+                <div id="annualTab" class="tab-content active">
+                    ${generateAnnualView(results)}
+                </div>
+
+                <div id="monthlyTab" class="tab-content">
+                    ${generateMonthlyView(results)}
+                </div>
+
+                <div id="comparisonTab" class="tab-content">
+                    ${generateComparisonView()}
+                </div>
+
+                <div id="riskTab" class="tab-content">
+                    ${generateRiskAnalysis(results)}
+                </div>
+            </div>
+
+            <div class="action-items">
+                <h3>🎯 Your Action Plan</h3>
+                <ul>
+                    <li>
+                        <span class="action-icon">📝</span>
+                        <div>
+                            <strong>Complete Partnership Application</strong><br>
+                            <span style="color: #666;">Submit your application for ${results.tier} within the next 7 days</span>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="action-icon">🎓</span>
+                        <div>
+                            <strong>Start Training Program</strong><br>
+                            <span style="color: #666;">Begin certification process immediately upon approval</span>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="action-icon">🏠</span>
+                        <div>
+                            <strong>Identify First ${results.years[0].deals} Properties</strong><br>
+                            <span style="color: #666;">Begin sourcing deals for Year 1 pipeline</span>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="action-icon">💼</span>
+                        <div>
+                            <strong>Build Investor Network</strong><br>
+                            <span style="color: #666;">Start connecting with potential investors and partners</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="window.location.href='#apply'">Apply for ${results.tier} →</button>
+                <button class="btn btn-primary" onclick="window.location.href='#schedule'">Schedule Discovery Call</button>
+                <button class="btn btn-secondary" onclick="goToStep(1)">Start Over</button>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+        // Initialize charts after DOM update
+        setTimeout(() => {
+            createCharts(results);
+        }, 100);
+    }
+
+    function generateAnnualView(results) {
+        let html = '<h3 style="color: #1e3c72; margin-bottom: 20px;">Year-by-Year Breakdown</h3>';
+        
+        (results.years || []).forEach(year => {
+            html += `
+                <div class="year-breakdown">
+                    <div class="year-header">
+                        <div class="year-title">Year ${year.year}</div>
+                        <div class="year-summary">${formatCurrency(year.revenue)}</div>
+                    </div>
+                    <div class="year-details">
+                        <div class="detail-item">
+                            <span class="detail-label">New Deals:</span>
+                            <span class="detail-value">${year.deals}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Revenue:</span>
+                            <span class="detail-value">${formatCurrency(year.revenue)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        return html;
+    }
+
+    function generateMonthlyView(results) {
+        return '<div class="info-box"><p>Monthly breakdown will show detailed month-by-month cash flow projections for each year.</p></div>';
+    }
+
+    function generateComparisonView() {
+        return '<div class="info-box"><p>Side-by-side comparison of all partnership tiers for your specific goals.</p></div>';
+    }
+
+    function generateRiskAnalysis(results) {
+        return '<div class="info-box"><p>Comprehensive risk analysis including best-case, base-case, and worst-case scenarios.</p></div>';
+    }
+
+    function createCharts(results) {
+        // Income growth chart
+        const incomeCtx = document.getElementById('incomeChart');
+        if (incomeCtx) {
+            new Chart(incomeCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                    datasets: [{
+                        label: 'Annual Income',
+                        data: (results.years || []).map(y => y.revenue),
+                        borderColor: '#1e3c72',
+                        backgroundColor: 'rgba(30, 60, 114, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + Number(value).toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Revenue breakdown chart (dummy values – plug real logic if you want)
+        const revenueCtx = document.getElementById('revenueChart');
+        if (revenueCtx) {
+            new Chart(revenueCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Acquisition Fees', 'AM Fees', 'PM Income', 'Carried Interest'],
+                    datasets: [{
+                        data: [30, 25, 25, 20],
+                        backgroundColor: ['#1e3c72', '#667eea', '#28a745', '#ffc107']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function switchTab(tabName) {
+        // Update buttons
+        const buttons = document.querySelectorAll('.tab-button');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Try to use the clicked button if available
+        const ev = window.event;
+        if (ev && ev.target && ev.target.classList.contains('tab-button')) {
+            ev.target.classList.add('active');
+        } else {
+            // Fallback: activate the first matching button by tab name
+            buttons.forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Update content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        const target = document.getElementById(tabName + 'Tab');
+        if (target) {
+            target.classList.add('active');
+        }
+    }
+
+    function downloadPDF() {
+        const resultsElement = document.getElementById("resultsContainer");
+        if (!resultsElement) {
+            alert("Please generate your roadmap first.");
+            return;
+        }
+
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert("PDF library not loaded correctly.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+
+        html2canvas(resultsElement, { scale: 2 }).then((canvas) => {
+            const imgData = canvas.toDataURL("image/png");
+
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            // Scale the image to fit on one page
+            const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+            const imgWidth = canvas.width * ratio;
+            const imgHeight = canvas.height * ratio;
+
+            const x = (pdfWidth - imgWidth) / 2;
+            const y = 10;
+
+            pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+            pdf.save("CapSeriesX_5Year_Roadmap.pdf");
+        }).catch((err) => {
+            console.error(err);
+            alert("Sorry, something went wrong while generating the PDF.");
+        });
+    }
+
+    function downloadExcel() {
+        const results = calculatorState.results || generateComprehensiveRoadmap();
+
+        let csv = "";
+        csv += "CapSeriesX 5-Year Roadmap\n";
+        csv += "\nWealth Goal (5 Years)," + calculatorState.wealthGoal + "\n";
+        csv += "Year 5 Income Goal," + calculatorState.incomeGoal + "\n";
+        csv += "Selected Tier," + (results.tier || "") + "\n\n";
+
+        csv += "Year,New Deals,Annual Revenue (USD)\n";
+        (results.years || []).forEach((y) => {
+            csv += `${y.year},${y.deals},${y.revenue}\n`;
+        });
+
+        csv += "\nSummary,,\n";
+        csv += `Total Deals,${results.summary.totalDeals},\n`;
+        csv += `5-Year Earnings,${results.summary.totalRevenue},\n`;
+        csv += `Year 5 Income,${results.summary.year5Income},\n`;
+
+        const blob = new Blob([csv], {
+            type: "text/csv;charset=utf-8;"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "CapSeriesX_Roadmap_Template.csv";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function emailRoadmap() {
+        const email = prompt("Enter your email address:");
+        if (email) {
+            alert(`Your roadmap will be sent to ${email}`);
+            // Later: integrate with backend email API here.
+        }
+    }
+
+    function formatCurrency(amount) {
+        const num = Number(amount) || 0;
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(num);
+    }
+</script>
+
+</body>
+</html>

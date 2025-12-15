@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CapSeriesX Partner Toolkit - Property Analysis & Submission Helper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1F4788 0%, #2980b9 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .header h1 { font-size: 2.5em; margin-bottom: 10px; font-weight: 700; }
+    .header p { font-size: 1.2em; opacity: 0.95; }
+
+    .main-content { padding: 40px; }
+
+    .intro-section {
+      background: #e8f4f8;
+      border-left: 5px solid #3498db;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 40px;
+    }
+
+    .intro-section h2 { color: #2c3e50; margin-bottom: 15px; }
+    .intro-section ul { margin-left: 25px; line-height: 1.8; }
+
+    .tier-selector {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 40px;
+    }
+
+    .tier-selector h2 { color: #2c3e50; margin-bottom: 20px; text-align: center; }
+
+    .tier-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .tier-btn {
+      padding: 25px;
+      border: 3px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      background: white;
+    }
+
+    .tier-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+
+    .tier-btn.silver { border-color: #95a5a6; }
+    .tier-btn.silver.active { background: linear-gradient(135deg, #bdc3c7, #95a5a6); color: white; }
+
+    .tier-btn.gold { border-color: #f39c12; }
+    .tier-btn.gold.active { background: linear-gradient(135deg, #f1c40f, #f39c12); color: white; }
+
+    .tier-btn.platinum { border-color: #c0a062; }
+    .tier-btn.platinum.active { background: linear-gradient(135deg, #c0a062, #8b7355); color: white; }
+
+    .tier-btn h3 { font-size: 1.5em; margin-bottom: 10px; }
+    .tier-btn p { font-size: 0.9em; opacity: 0.8; }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
+      margin-top: 40px;
+    }
+
+    .tool-card {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 25px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .tool-card:hover {
+      border-color: #3498db;
+      box-shadow: 0 8px 20px rgba(52, 152, 219, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .tool-icon { font-size: 3em; margin-bottom: 15px; }
+
+    .tool-card h3 { color: #2c3e50; margin-bottom: 12px; font-size: 1.3em; }
+    .tool-card p { color: #6c757d; line-height: 1.6; margin-bottom: 15px; }
+
+    .tool-card .features {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+
+    .tool-card .features ul { margin-left: 20px; font-size: 0.9em; color: #495057; }
+    .tool-card .features li { margin-bottom: 8px; }
+
+    .download-btn {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .download-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
+    .download-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+
+    .requirement-section {
+      background: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 30px 0;
+      display: none;
+    }
+
+    .requirement-section.active { display: block; }
+    .requirement-section h3 { color: #856404; margin-bottom: 15px; }
+
+    .requirement-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+    }
+
+    .requirement-item {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 3px solid #ffc107;
+    }
+
+    .requirement-item strong { color: #2c3e50; display: block; margin-bottom: 5px; }
+    .requirement-item span { color: #6c757d; font-size: 0.9em; }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 30px 0;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .comparison-table th {
+      background: #2c3e50;
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .comparison-table td { padding: 12px 15px; border-bottom: 1px solid #e9ecef; }
+    .comparison-table tr:hover { background: #f8f9fa; }
+
+    .check { color: #28a745; font-weight: 800; }
+    .partial { color: #ffc107; font-weight: 800; }
+
+    .help-section {
+      background: #d4edda;
+      border-left: 5px solid #28a745;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+    }
+
+    .help-section h3 { color: #155724; margin-bottom: 12px; }
+
+    .feature-title{
+      font-weight: 650;
+      color: #1f2d3d;
+    }
+
+    /* ✅ Anchor wrapper for buttons */
+    .register-link {
+      display: block;
+      text-decoration: none;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.8em; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .tier-buttons { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 CapSeriesX Partner Toolkit</h1>
+    <p>Complete Property Analysis & Submission Helper Tools</p>
+  </div>
+
+  <div class="main-content">
+    <div class="intro-section">
+      <h2>🎯 Welcome to Your Partner Success Toolkit!</h2>
+      <p>We've created comprehensive tools to help you gather all required data and complete your property submission with confidence. Whether you're a Silver, Gold, or Platinum partner, these tools will:</p>
+      <ul>
+        <li><strong>Calculate all financial metrics</strong> automatically with easy-to-use spreadsheets</li>
+        <li><strong>Guide you through market research</strong> with step-by-step data collection templates</li>
+        <li><strong>Provide checklists</strong> for all required documents and information</li>
+        <li><strong>Generate professional reports</strong> ready for submission</li>
+        <li><strong>Save you time</strong> by automating complex calculations</li>
+      </ul>
+    </div>
+
+    <div class="tier-selector">
+      <h2>Select Your Partnership Tier</h2>
+      <p style="text-align: center; color: #6c757d; margin-bottom: 20px;">Choose your tier to see relevant tools and requirements</p>
+
+      <div class="tier-buttons">
+        <div class="tier-btn silver" onclick="selectTier('silver')">
+          <h3>🥈 Silver</h3>
+          <p>Investor Partner</p>
+          <p style="margin-top: 10px; font-size: 0.85em;">5-Year Financial Pro Forma</p>
+        </div>
+        <div class="tier-btn gold" onclick="selectTier('gold')">
+          <h3>🥇 Gold</h3>
+          <p>Syndicator Partner</p>
+          <p style="margin-top: 10px; font-size: 0.85em;">Full Due Diligence Package</p>
+        </div>
+        <div class="tier-btn platinum" onclick="selectTier('platinum')">
+          <h3>💎 Platinum</h3>
+          <p>Turnkey Partner</p>
+          <p style="margin-top: 10px; font-size: 0.85em;">Investment-Grade Submission</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requirements by Tier -->
+    <div class="requirement-section" id="requirements-silver">
+      <h3>📋 Silver Partner Data Requirements</h3>
+      <p>As a Silver partner, you need to provide the following data categories:</p>
+      <div class="requirement-list">
+        <div class="requirement-item"><strong>Financial Data</strong><span>5-year pro forma, purchase price, renovation costs, operating expenses, debt structure</span></div>
+        <div class="requirement-item"><strong>Market Information</strong><span>Market vacancy rates, average rents, rent growth trends, absorption data</span></div>
+        <div class="requirement-item"><strong>Property Details</strong><span>Address, type, units, square footage, year built, condition, amenities</span></div>
+        <div class="requirement-item"><strong>Competitive Analysis</strong><span>3-5 comparable properties with rents, occupancy, and distance</span></div>
+        <div class="requirement-item"><strong>Basic Legal Docs</strong><span>Purchase contract, title report, zoning letter, tax records</span></div>
+        <div class="requirement-item"><strong>Capital Stack</strong><span>Debt and equity breakdown, financing terms, minimum investment</span></div>
+      </div>
+    </div>
+
+    <div class="requirement-section" id="requirements-gold">
+      <h3>📋 Gold Partner Data Requirements</h3>
+      <p>As a Gold partner, you need everything Silver requires PLUS:</p>
+      <div class="requirement-list">
+        <div class="requirement-item"><strong>Advanced Financials</strong><span>10-year projections, IRR calculations, multiple exit scenarios, sensitivity analysis</span></div>
+        <div class="requirement-item"><strong>Professional Market Study</strong><span>Demographics, employment data, economic drivers, supply pipeline, absorption trends</span></div>
+        <div class="requirement-item"><strong>Inspection Reports</strong><span>Professional property inspection, systems assessment, 5-year CapEx plan</span></div>
+        <div class="requirement-item"><strong>Complete Legal Package</strong><span>Title commitment, Phase I ESA (if needed), all permits, insurance docs</span></div>
+        <div class="requirement-item"><strong>Risk Assessment</strong><span>Top 5 risks with probability, impact scores, and mitigation strategies</span></div>
+        <div class="requirement-item"><strong>Operational Plan</strong><span>Management structure, vendor network, marketing plan, 90-day transition</span></div>
+      </div>
+    </div>
+
+    <div class="requirement-section" id="requirements-platinum">
+      <h3>📋 Platinum Partner Data Requirements</h3>
+      <p>As a Platinum partner, you need everything Gold requires PLUS:</p>
+      <div class="requirement-list">
+        <div class="requirement-item"><strong>Investment-Grade Financials</strong><span>10-year detailed model, waterfall structure, equity multiple, all tax considerations</span></div>
+        <div class="requirement-item"><strong>Comprehensive Market Study</strong><span>Full demographic analysis, economic forecast, detailed comp analysis with photos</span></div>
+        <div class="requirement-item"><strong>Complete Due Diligence</strong><span>All inspections, environmental studies, surveys, zoning verification, utility analysis</span></div>
+        <div class="requirement-item"><strong>PPM & Legal Structure</strong><span>Draft PPM, subscription agreement, operating agreement, securities compliance</span></div>
+        <div class="requirement-item"><strong>Marketing Package</strong><span>Executive summary, pitch deck, property photos/video, one-sheet, sponsor bio</span></div>
+        <div class="requirement-item"><strong>Investment Structure</strong><span>Complete waterfall, distribution terms, fee structure, GP/LP splits</span></div>
+      </div>
+    </div>
+
+    <!-- Tools Section -->
+    <div id="toolsSection" style="display:none;">
+      <h2 style="color:#2c3e50; margin:40px 0 30px 0; font-size:2em; text-align:center;">🛠️ Your Partner Tools</h2>
+
+      <div class="tools-grid">
+
+        <div class="tool-card">
+          <div class="tool-icon">📊</div>
+          <h3>Complete Financial Calculator</h3>
+          <p>Excel-based comprehensive financial analysis tool that calculates all metrics you need for your submission.</p>
+          <div class="features">
+            <strong>Features:</strong>
+            <ul>
+              <li><span class="feature-title">Auto-calculates NOI, Cap Rate, Cash-on-Cash, DSCR</span> - Key performance metrics instantly</li>
+              <li><span class="feature-title">5-year and 10-year pro forma projections</span> - Holding period financial modeling</li>
+              <li><span class="feature-title">IRR and equity multiple calculations</span> - Investor return outputs</li>
+              <li><span class="feature-title">Sensitivity analysis</span> - Best/base/worst case scenarios</li>
+              <li><span class="feature-title">Exit scenario modeling</span> - Multiple sale assumptions</li>
+              <li><span class="feature-title">Waterfall distribution calculator</span> - Distribution structure support</li>
+              <li><span class="feature-title">Pre-formatted for easy data entry</span> - Clean, guided input areas</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('financial')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">📈</div>
+          <h3>Market Research Template</h3>
+          <p>Step-by-step guide to gathering and organizing all market data needed for your submission.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">MSA/submarket analysis</span> - MSA/submarket analysis (19 KB)</li>
+              <li><span class="feature-title">Data sources list</span> - Where to find required market information</li>
+              <li><span class="feature-title">Demographic data checklist</span> - Population, income, growth indicators</li>
+              <li><span class="feature-title">Competitive property comparison table</span> - Structured comp capture</li>
+              <li><span class="feature-title">Market rent survey template</span> - Rent positioning worksheet</li>
+              <li><span class="feature-title">Supply/demand analysis worksheet</span> - Pipeline and absorption inputs</li>
+              <li><span class="feature-title">Economic drivers checklist</span> - Employers, transit, demand catalysts</li>
+              <li><span class="feature-title">Auto-generated summary report</span> - Clean output for submission</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('market')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">✅</div>
+          <h3>Document Preparation Checklist</h3>
+          <p>Interactive checklist showing exactly which documents you need and how to obtain them.</p>
+          <div class="features">
+            <strong>Features:</strong>
+            <ul>
+              <li><span class="feature-title">Tier-specific requirements</span> - Clear checklist by tier</li>
+              <li><span class="feature-title">Document source guidance</span> - Where/how to obtain each document</li>
+              <li><span class="feature-title">Sample request letters</span> - Faster outreach to vendors/authorities</li>
+              <li><span class="feature-title">Organization system</span> - Simple folder/file approach</li>
+              <li><span class="feature-title">Progress tracker</span> - Know what’s done vs pending</li>
+              <li><span class="feature-title">Submission-ready file naming</span> - Clean naming standards</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('checklist')">📥 Download PDF Guide</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🏢</div>
+          <h3>Property Data Collection Form</h3>
+          <p>Printable worksheet to organize all property-specific information during site visits.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">130+ Data Points</span> - Comprehensive property information capture</li>
+              <li><span class="feature-title">Tier-Specific Sections</span> - Clear indicators for Bronze, Silver, Gold, Platinum requirements</li>
+              <li><span class="feature-title">Data Validation Dropdowns</span> - 30+ dropdown menus for consistent data entry</li>
+              <li><span class="feature-title">Auto-Calculations</span> - Unit mix totals, averages, and summaries</li>
+              <li><span class="feature-title">Color-Coded Inputs</span> - Yellow (required), Orange (critical), Green (calculated)</li>
+              <li><span class="feature-title">Professional Formatting</span> - Investment-grade appearance with proper categorization</li>
+              <li><span class="feature-title">Systematic Organization</span> - Logical flow from basic to detailed information</li>
+              <li><span class="feature-title">Built-in Checklists</span> - Track documents and completion progress</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('property')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🔍</div>
+          <h3>Competitive Analysis Builder</h3>
+          <p>Easy-to-use tool for comparing your property against local competition.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">Compare Up to 10 Competitors</span> - Comprehensive competitive set analysis</li>
+              <li><span class="feature-title">40+ Comparison Metrics</span> - Location, physical, financial, amenities, condition</li>
+              <li><span class="feature-title">45+ Amenities Checklist</span> - Yes/No tracking for quick comparison</li>
+              <li><span class="feature-title">Color-Coded Analysis</span> - Blue (subject), Yellow (competitors), Green (calculated)</li>
+              <li><span class="feature-title">Data Validation Dropdowns</span> - 30+ dropdowns for consistent categorization</li>
+              <li><span class="feature-title">Strategic Framework</span> - From data gathering to actionable recommendations</li>
+              <li><span class="feature-title">Tier-Specific Guidance</span> - Bronze (3 comps), Silver (5), Gold (7-10), Platinum (10+)</li>
+              <li><span class="feature-title">Professional Formatting</span> - Investment-grade presentation quality</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('competitive')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">⚠️</div>
+          <h3>Risk Assessment Template</h3>
+          <p>Framework for identifying, scoring, and mitigating investment risks.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">Top 5 Risks with Probability &amp; Impact</span> - Exactly as specified in partner toolkit</li>
+              <li><span class="feature-title">Risk Score Auto-Calculation</span> - Impact level × probability formula</li>
+              <li><span class="feature-title">Mitigation Strategy Templates</span> - Structured fields for each risk</li>
+              <li><span class="feature-title">Reserve Fund Calculator</span> - Minimum 6 months operating expenses standard</li>
+              <li><span class="feature-title">48 Pre-Identified Risks</span> - Across 6 categories to ensure nothing is missed</li>
+              <li><span class="feature-title">Data Validation Dropdowns</span> - Consistent categorization and scoring</li>
+              <li><span class="feature-title">Visual Risk Prioritization</span> - Color-coded by severity (Red/Orange/Blue)</li>
+              <li><span class="feature-title">Investment Decision Framework</span> - Clear proceed/don't proceed recommendation</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('risk')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🌐</div>
+          <h3>Data Source Directory</h3>
+          <p>Comprehensive list of free and paid resources for gathering required data.</p>
+          <div class="features">
+            <strong>Resources for:</strong>
+            <ul>
+              <li><span class="feature-title">Market demographics</span> - Census and local planning sources</li>
+              <li><span class="feature-title">Property valuations</span> - Pricing and comps platforms</li>
+              <li><span class="feature-title">Market rents</span> - Rent estimation and survey tools</li>
+              <li><span class="feature-title">Economic data</span> - BLS, BEA and workforce trends</li>
+              <li><span class="feature-title">Title and legal searches</span> - Public records and title tools</li>
+              <li><span class="feature-title">Environmental databases</span> - Standard reference resources</li>
+              <li><span class="feature-title">Direct links to all sources</span> - Fast access list</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('sources')">📥 Download PDF Guide</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">💰</div>
+          <h3>Operating Expense Estimator</h3>
+          <p>Industry benchmarks and calculators for estimating property operating expenses.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">23 Detailed Expense Categories</span> - Every major OpEx line item covered</li>
+              <li><span class="feature-title">Industry Benchmarking</span> - Compare to market standards automatically</li>
+              <li><span class="feature-title">Auto-Calculations</span> - Per unit, per SF, % of EGI for every expense</li>
+              <li><span class="feature-title">5-Year Growth Modeling</span> - Project expenses over holding period</li>
+              <li><span class="feature-title">Variance Analysis</span> - See exactly where you're above/below market</li>
+              <li><span class="feature-title">Data Validation</span> - Dropdowns for consistent categorization</li>
+              <li><span class="feature-title">Red Flag Detection</span> - Document concerns systematically</li>
+              <li><span class="feature-title">Professional Formatting</span> - Investment-grade presentation</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('opex')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card gold-platinum-only">
+          <div class="tool-icon">🔧</div>
+          <h3>Capital Expenditure Planner</h3>
+          <p>5-year and 10-year capital expenditure planning tool with replacement schedules.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">17 Major Systems Tracked</span> - Comprehensive asset inventory</li>
+              <li><span class="feature-title">Auto-Calculated Replacement Schedule</span> - Based on age and useful life</li>
+              <li><span class="feature-title">5-Year Detailed Planning</span> - 50 line items across 5 years</li>
+              <li><span class="feature-title">10-Year Extended Planning</span> - Long-term capital visibility</li>
+              <li><span class="feature-title">Reserve Fund Calculator</span> - 1-2% property value guideline</li>
+              <li><span class="feature-title">Inflation Adjustments</span> - Built-in 3% escalation</li>
+              <li><span class="feature-title">Priority Categorization</span> - Critical, High, Medium, Low</li>
+              <li><span class="feature-title">Condition Tracking</span> - Excellent to Replace Now scale</li>
+              <li><span class="feature-title">Cost Budgeting</span> - Detailed cost tracking by year and category</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('capex')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card platinum-only">
+          <div class="tool-icon">📋</div>
+          <h3>PPM Outline Generator</h3>
+          <p>Structured template for organizing your Private Placement Memorandum content.</p>
+          <div class="features">
+            <strong>Key Features:</strong>
+            <ul>
+              <li><span class="feature-title">Comprehensive Risk Factor Templates</span> - 28 categories covering all material risks</li>
+              <li><span class="feature-title">Fee Disclosure Framework</span> - Every possible compensation disclosed</li>
+              <li><span class="feature-title">Forward-Looking Statement Disclaimers</span> - Required SEC language</li>
+              <li><span class="feature-title">Use of Proceeds Accounting</span> - Must total 100%</li>
+              <li><span class="feature-title">Management Background Requirements</span> - Track record documentation</li>
+              <li><span class="feature-title">Legal Compliance Reminders</span> - Throughout every section</li>
+              <li><span class="feature-title">Reg D 506(b) and 506(c) Support</span> - Dropdown selection</li>
+              <li><span class="feature-title">Attorney Review Integration</span> - Built into workflow</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('ppm')">📥 Download Excel Template</button>
+        </div>
+
+        <div class="tool-card platinum-only">
+          <div class="tool-icon">🎯</div>
+          <h3>Investor Marketing Package</h3>
+          <p>Templates for creating professional investor-facing marketing materials.</p>
+          <div class="features">
+            <strong>Includes:</strong>
+            <ul>
+              <li><span class="feature-title">Market Research Template</span> - MSA/submarket analysis (19 KB)</li>
+              <li><span class="feature-title">Property Data Collection Form</span> - Comprehensive property data (24 KB)</li>
+              <li><span class="feature-title">Competitive Analysis Builder</span> - Compare up to 10 competitors (20 KB)</li>
+              <li><span class="feature-title">Risk Assessment Template</span> - Identify, quantify, mitigate risks (17 KB)</li>
+              <li><span class="feature-title">Operating Expense Estimator</span> - Detailed OpEx with benchmarking (17 KB)</li>
+              <li><span class="feature-title">Capital Expenditure Planner</span> - 5/10-year CapEx planning (18 KB)</li>
+              <li><span class="feature-title">PPM Outline Generator</span> - Complete PPM structure &amp; guidance (20 KB)</li>
+              <li><span class="feature-title">Investor Marketing Package</span> - Professional marketing materials (18 KB)</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('marketing')">📥 Download Template Pack</button>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🚀</div>
+          <h3>Submission Preparation Guide</h3>
+          <p>Step-by-step guide to completing your property submission form efficiently.</p>
+          <div class="features">
+            <strong>Guidance on:</strong>
+            <ul>
+              <li><span class="feature-title">Order of operations</span> - Complete in the right sequence</li>
+              <li><span class="feature-title">Time estimates by section</span> - Plan your work efficiently</li>
+              <li><span class="feature-title">Common mistakes to avoid</span> - Save back-and-forth</li>
+              <li><span class="feature-title">Quality check procedures</span> - Submit with confidence</li>
+              <li><span class="feature-title">File organization tips</span> - Clean, professional package</li>
+              <li><span class="feature-title">Submission best practices</span> - Final checklist guidance</li>
+            </ul>
+          </div>
+          <button class="download-btn" onclick="downloadTool('guide')">📥 Download PDF Guide</button>
+        </div>
+
+      </div>
+
+      <h2 style="color: #2c3e50; margin: 60px 0 30px 0; font-size: 2em; text-align: center;">📊 Tool Requirements by Tier</h2>
+      <table class="comparison-table">
+        <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Silver Partner</th>
+          <th>Gold Partner</th>
+          <th>Platinum Partner</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td><strong>Financial Calculator</strong></td>
+          <td class="check">✓ Required (5-year)</td>
+          <td class="check">✓ Required (10-year)</td>
+          <td class="check">✓ Required (10-year+)</td>
+        </tr>
+        <tr>
+          <td><strong>Market Research Template</strong></td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Document Checklist</strong></td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Property Data Form</strong></td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Competitive Analysis</strong></td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Risk Assessment</strong></td>
+          <td class="partial">○ Optional</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Data Source Directory</strong></td>
+          <td class="check">✓ Helpful</td>
+          <td class="check">✓ Helpful</td>
+          <td class="check">✓ Helpful</td>
+        </tr>
+        <tr>
+          <td><strong>OpEx Estimator</strong></td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>CapEx Planner</strong></td>
+          <td class="partial">○ Optional</td>
+          <td class="check">✓ Required</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>PPM Outline</strong></td>
+          <td>-</td>
+          <td class="partial">○ Optional</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Marketing Package</strong></td>
+          <td>-</td>
+          <td class="partial">○ Optional</td>
+          <td class="check">✓ Required</td>
+        </tr>
+        <tr>
+          <td><strong>Submission Guide</strong></td>
+          <td class="check">✓ Recommended</td>
+          <td class="check">✓ Recommended</td>
+          <td class="check">✓ Recommended</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div class="help-section">
+        <h3>💡 Need Help?</h3>
+        <p><strong>We're here to support you!</strong></p>
+        <p>If you need assistance using these tools or have questions about your submission requirements:</p>
+        <ul style="margin-left: 25px; margin-top: 10px; line-height: 1.8;">
+          <li><strong>Email:</strong> partners@veepcapital.com</li>
+          <li><strong>Schedule a Call:</strong> Book a 30-minute consultation with our partner success team</li>
+          <li><strong>Video Tutorials:</strong> Watch our step-by-step tool tutorials (coming soon)</li>
+          <li><strong>Partner Portal:</strong> Access additional resources and training materials</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentTier = null;
+
+  const REGISTER_URL = "https://form.jotform.com/253423597474062";
+
+  function selectTier(tier) {
+    currentTier = tier;
+
+    document.querySelectorAll('.tier-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.tier-btn.${tier}`).classList.add('active');
+
+    document.querySelectorAll('.requirement-section').forEach(section => section.classList.remove('active'));
+    document.getElementById(`requirements-${tier}`).classList.add('active');
+
+    document.getElementById('toolsSection').style.display = 'block';
+
+    document.querySelectorAll('.gold-platinum-only').forEach(card => {
+      const btn = card.querySelector('.download-btn');
+      if (tier === 'silver') {
+        card.style.opacity = '0.5';
+        btn.disabled = true;
+      } else {
+        card.style.opacity = '1';
+        btn.disabled = false;
+      }
+    });
+
+    document.querySelectorAll('.platinum-only').forEach(card => {
+      const btn = card.querySelector('.download-btn');
+      if (tier !== 'platinum') {
+        card.style.opacity = '0.5';
+        btn.disabled = true;
+      } else {
+        card.style.opacity = '1';
+        btn.disabled = false;
+      }
+    });
+
+    setTimeout(() => {
+      document.getElementById('toolsSection').scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const wrapOrUnwrap = () => {
+      document.querySelectorAll(".download-btn").forEach((btn) => {
+        btn.textContent = "Register Today";
+        btn.removeAttribute("onclick");
+
+        // If disabled: unwrap if wrapped
+        if (btn.disabled && btn.parentElement && btn.parentElement.tagName === "A") {
+          const a = btn.parentElement;
+          const parent = a.parentElement;
+          a.removeChild(btn);
+          parent.replaceChild(btn, a);
+          return;
+        }
+
+        // If enabled and not wrapped: wrap
+        if (!btn.disabled && (!btn.parentElement || btn.parentElement.tagName !== "A")) {
+          const a = document.createElement("a");
+          a.href = REGISTER_URL;
+          a.target = "_self"; // ✅ same tab
+          a.style.display = "block";
+          a.style.textDecoration = "none";
+
+          const parent = btn.parentNode;
+          parent.replaceChild(a, btn);
+          a.appendChild(btn);
+        }
+      });
+    };
+
+    wrapOrUnwrap();
+
+    const observer = new MutationObserver(wrapOrUnwrap);
+    observer.observe(document.body, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["disabled", "style", "class"]
+    });
+  });
+</script>
+
+</body>
+</html>
