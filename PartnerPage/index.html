@@ -4,14 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partnership Opportunities | Veep Capital - CapSeriesX</title>
-     <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' *;">
-    
-    <!-- Disable COEP/COOP that block clicks in iframes -->
-    <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="unsafe-none">
-    
-    <!-- Prevent clickjacking but allow functionality -->
-    <meta name="referrer" content="no-referrer-when-downgrade">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -543,48 +535,6 @@
             color: #dc3545;
             font-size: 1.3em;
         }
-         body {
-        pointer-events: auto !important;
-        touch-action: manipulation;
-    }
-    
-    /* Fix: Explicitly enable pointer events on interactive elements */
-    a, button, .cta-btn, input, select, textarea, .radio-option, .checkbox-option, .tier-select-card, .nav-btn {
-        pointer-events: auto !important;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-        cursor: pointer !important;
-    }
-    
-    /* Ensure CTA buttons are clickable */
-    .cta-btn {
-        position: relative;
-        z-index: 6;
-    }
-    
-    .cta-buttons {
-        position: relative;
-        z-index: 5;
-    }
-    
-    /* Fix for tier selection cards */
-    .tier-select-card {
-        cursor: pointer;
-        pointer-events: auto !important;
-    }
-    
-    /* Fix for radio and checkbox options */
-    .radio-option, .checkbox-option {
-        cursor: pointer;
-        pointer-events: auto !important;
-    }
-    
-    /* Fix for navigation buttons */
-    .nav-btn {
-        cursor: pointer;
-        pointer-events: auto !important;
-    }
-    
     </style>
 </head>
 <body>
@@ -596,17 +546,14 @@
             <p class="subtitle">Join the CapSeriesX Revolution in Real Estate Tokenization</p>
             <p class="tagline">Build a Scalable, Recurring Revenue Business with Industry-Leading Technology, Compliance Infrastructure, and Comprehensive Support</p>
             
-         <div class="cta-buttons">
-    <!-- Internal links use data-scroll-target -->
-    <a href="#tiers" data-scroll-target="tiers" class="cta-btn cta-primary">🤝 Explore Partnership Tiers</a>
-    <a href="#assessment" data-scroll-target="assessment" class="cta-btn cta-primary">Take Partnership Assessment</a>
-    <a href="#roadmap" data-scroll-target="roadmap" class="cta-btn cta-primary">Calculate Your Roadmap</a>
-    
-    <!-- External links use target="_blank" -->
-    <a href="advanced-calculator.html" target="_blank" class="cta-btn cta-secondary">🚀 Advanced Calculator</a>
-    <a href="#schedule" data-scroll-target="schedule" class="cta-btn cta-secondary">Schedule Discovery Call</a>
-    <a href="partner_toolkit_hub.html" target="_blank" class="cta-btn cta-secondary">Partner Toolkit</a>
-</div>
+            <div class="cta-buttons">
+                <a href="#tiers" data-scroll-target="tiers" class="cta-btn cta-primary">🤝 Explore Partnership Tiers</a>
+                <a href="#assessment" data-scroll-target="assessment" class="cta-btn cta-primary">Take Partnership Assessment</a>
+                <a href="#roadmap" data-scroll-target="roadmap" class="cta-btn cta-secondary">Calculate Your Roadmap</a>
+                <a href="advanced-calculator.html"  class="cta-btn cta-secondary">🚀 Advanced Calculator</a>
+                <a href="#schedule" data-scroll-target="schedule" class="cta-btn cta-secondary">Schedule Discovery Call</a>
+                <a href='partner_toolkit_hub.html'  class="cta-btn cta-secondary">Partner Toolkit</a>
+            </div>
             <p style="margin-top: 20px; font-size: 0.95em; opacity: 0.9;">
                 <a href="#download" style="color: white; text-decoration: underline;">Download Partnership Guide</a> | 
                 <a href="#how-it-works" style="color: white; text-decoration: underline;">How It Works</a>
@@ -3260,100 +3207,6 @@
                 closeAdvancedCalculatorModal();
             }
         });
-         
-    function scrollToSectionById(targetId) {
-        const targetElement = document.getElementById(targetId);
-        if (!targetElement) {
-            console.warn('Target not found:', targetId);
-            return false;
-        }
-
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        // Update URL without jumping
-        if (window.history && typeof window.history.replaceState === 'function') {
-            window.history.replaceState(null, '', `#${targetId}`);
-        }
-        
-        return true;
-    }
-
-    // Event delegation for scroll links - handles clicks reliably in iframes
-    document.addEventListener('click', function(event) {
-        // Handle data-scroll-target links
-        const trigger = event.target.closest('a[data-scroll-target]');
-        if (trigger) {
-            const targetId = trigger.getAttribute('data-scroll-target');
-            if (targetId && scrollToSectionById(targetId)) {
-                event.preventDefault();
-            }
-            return;
-        }
-        
-        // Handle regular anchor links (href="#section")
-        const anchorLink = event.target.closest('a[href^="#"]');
-        if (anchorLink) {
-            const href = anchorLink.getAttribute('href');
-            if (href && href.startsWith('#') && href.length > 1) {
-                const targetId = href.substring(1);
-                if (scrollToSectionById(targetId)) {
-                    event.preventDefault();
-                }
-            }
-        }
-    });
-
-    // ============================================
-    // IFRAME DETECTION & DEBUGGING
-    // ============================================
-    
-    if (window.self !== window.top) {
-        console.log('✅ Running in iframe mode - click handlers activated');
-        
-        // Prevent security policy violations from blocking interactions
-        window.addEventListener('securitypolicyviolation', function(e) {
-            console.warn('Security policy violation (handled):', e.violatedDirective);
-        });
-        
-        // Notify parent that page is loaded
-        window.parent.postMessage({ type: 'PARTNER_PAGE_LOADED' }, '*');
-    }
-
-    // ============================================
-    // ENSURE ALL INTERACTIVE ELEMENTS ARE CLICKABLE
-    // ============================================
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        // Force pointer events on all interactive elements
-        const interactiveSelectors = [
-            'a', 'button', '.cta-btn', 'input', 'select', 'textarea',
-            '.radio-option', '.checkbox-option', '.tier-select-card',
-            '.nav-btn', '.modal-close', '.step-dot'
-        ];
-        
-        const interactiveElements = document.querySelectorAll(interactiveSelectors.join(', '));
-        
-        interactiveElements.forEach(function(el) {
-            el.style.pointerEvents = 'auto';
-            el.style.cursor = 'pointer';
-        });
-        
-        console.log('✅ Interactive elements activated:', interactiveElements.length);
-    });
-
-    // ============================================
-    // MESSAGE HANDLING FOR PARENT COMMUNICATION
-    // ============================================
-    
-    window.addEventListener('message', function(event) {
-        // Handle messages from parent window
-        if (event.data && event.data.type === 'SCROLL_TO_SECTION') {
-            const targetId = event.data.targetId;
-            if (targetId) {
-                scrollToSectionById(targetId);
-            }
-        }
-    });
     </script>
 
     <div id="download" style="padding: 20px; text-align: center; background: #f8f9fa;">
