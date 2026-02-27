@@ -58,6 +58,8 @@
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 30px;
+            position: relative;
+            z-index: 5;
         }
 
         .cta-btn {
@@ -70,6 +72,9 @@
             display: inline-block;
             transition: all 0.3s ease;
             font-weight: 600;
+            position: relative;
+            z-index: 6;
+            pointer-events: auto;
         }
 
         .cta-primary {
@@ -542,11 +547,11 @@
             <p class="tagline">Build a Scalable, Recurring Revenue Business with Industry-Leading Technology, Compliance Infrastructure, and Comprehensive Support</p>
             
             <div class="cta-buttons">
-                <a href="#tiers" class="cta-btn cta-primary">🤝 Explore Partnership Tiers</a>
-                <a href="#assessment" class="cta-btn cta-primary">Take Partnership Assessment</a>
-                <a href="#roadmap" class="cta-btn cta-secondary">Calculate Your Roadmap</a>
+                <a href="#tiers" data-scroll-target="tiers" class="cta-btn cta-primary">🤝 Explore Partnership Tiers</a>
+                <a href="#assessment" data-scroll-target="assessment" class="cta-btn cta-primary">Take Partnership Assessment</a>
+                <a href="#roadmap" data-scroll-target="roadmap" class="cta-btn cta-secondary">Calculate Your Roadmap</a>
                 <a href="advanced-calculator.html"  class="cta-btn cta-secondary">🚀 Advanced Calculator</a>
-                <a href="#schedule" class="cta-btn cta-secondary">Schedule Discovery Call</a>
+                <a href="#schedule" data-scroll-target="schedule" class="cta-btn cta-secondary">Schedule Discovery Call</a>
                 <a href='partner_toolkit_hub.html'  class="cta-btn cta-secondary">Partner Toolkit</a>
             </div>
             <p style="margin-top: 20px; font-size: 0.95em; opacity: 0.9;">
@@ -1242,6 +1247,36 @@
     </style>
 
     <script>
+        // Reliable internal section navigation for iframe/embed contexts.
+        function scrollToSectionById(targetId) {
+            const targetElement = document.getElementById(targetId);
+            if (!targetElement) {
+                return false;
+            }
+
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (window.history && typeof window.history.replaceState === 'function') {
+                window.history.replaceState(null, '', `#${targetId}`);
+            }
+            return true;
+        }
+
+        document.addEventListener('click', function(event) {
+            const trigger = event.target.closest('a[data-scroll-target]');
+            if (!trigger) {
+                return;
+            }
+
+            const targetId = trigger.getAttribute('data-scroll-target');
+            if (!targetId) {
+                return;
+            }
+
+            if (scrollToSectionById(targetId)) {
+                event.preventDefault();
+            }
+        });
+
         // Assessment Data Structure
         const assessmentData = {
             currentStep: 0,
